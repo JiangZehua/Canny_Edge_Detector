@@ -50,16 +50,11 @@ def convolution(img, mask):
     # convolution operation
     for i in range(img.shape[0]-mask.shape[0]+1):
         for j in range(img.shape[1]-mask.shape[1]+1):
-            result[i,j] = np.sum(img[i:i+mask.shape[0], 
-                                     j:j+mask.shape[1]] * mask)
+            result[i,j] = np.sum(img[i:i+mask.shape[0], j:j+mask.shape[1]] * mask)
     
     # normalize the result using the sum of the mask (140 for Gaussian mask) if necessary
-    norm = 1 / (np.sum(np.concatenate(mask))) if np.sum(np.concatenate(mask)) != 0 else 1
-
-    # # padding the result with zeros so that the size of the result is the same as the original image
-    # result = np.pad(result, ((mask.shape[0]//2, mask.shape[0]//2), (mask.shape[1]//2, mask.shape[1]//2)), 'constant', constant_values=0)
-    
-    return norm * result # return the normalized result
+    norm = 1 / (np.sum(np.concatenate(mask))) if np.sum(np.concatenate(mask)) != 0 else 1 
+    return norm * result 
 
 
 def Gradient_Operation(img, g_0, g_1, g_2, g_3):
@@ -70,10 +65,9 @@ def Gradient_Operation(img, g_0, g_1, g_2, g_3):
     # create a zero matrix to store the result
     result = -10000 * np.ones((img.shape[0] - mask_shape[0] + 1, 
                        img.shape[1] - mask_shape[1] + 1),)
-    # result = -1000 * np.ones((img.shape)) # with padding
     index = - np.ones((img.shape[0] - mask_shape[0] + 1,
                         img.shape[1] - mask_shape[1] + 1))
-    # index = - np.ones((img.shape)) # with padding
+
 
     for i, g in enumerate([g_0, g_1, g_2, g_3]):
         compare = convolution(img, g) 
@@ -83,7 +77,6 @@ def Gradient_Operation(img, g_0, g_1, g_2, g_3):
     # calculate the gradient direction
     direction = np.zeros((img.shape[0] - mask_shape[0] + 1,
                         img.shape[1] - mask_shape[1] + 1))
-    # direction = np.zeros((img.shape)) # with padding
     direction[index == 0] = 0
     direction[index == 1] = 45
     direction[index == 2] = 90
@@ -128,9 +121,6 @@ def Non_Max_Suppression(respond, direction):
                     result[i-1,j-1] = respond[i,j]
                 else:
                     result[i-1,j-1] = 0
-
-    # # padding the result with zeros so that the size of the result is the same as the original image
-    # result = np.pad(result, ((1, 1), (1, 1)), 'constant', constant_values=0)
     return result
 
 
@@ -149,34 +139,27 @@ def main(img):
     main function for Canny Edge Detector
     '''
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) # convert to gray scale (512, 512)
-
-    # Gaussian smoothing
     img = convolution(img, Gaussian_mask)
-    # save the result
-    cv2.imwrite("results/Gaussian_smoothing.bmp", img)
-
-    # Normalized magnitude of the gradient
     respond, direction = Gradient_Operation(img, G_0, G_1, G_2, G_3)
-    cv2.imwrite("results/Normalized_magnitude_of_the_gradient.bmp", respond)
-    # save the histogram of the result
-    plt.hist(respond.flatten(), bins=100)
-    plt.savefig("results/histogram_of_the_magnitude.png")
-
-    # Non-Maximum Suppression
     suppressed = Non_Max_Suppression(respond, direction)
-    cv2.imwrite("results/Non-Maximum_Suppression.bmp", suppressed)
-
     for i in [0.25, 0.5, 0.75]:
         result = simple_threshold(suppressed, i)
-        cv2.imwrite(f"results/binary_edge_map_{i}_threshold.bmp", result*255)
+        # save the result
+        cv2.imwrite(f"result_{i}.bmp", result*255)
+
+    
+
+
+    
+
+
+    
 
 
 if __name__ == "__main__":
-    image1 = "inputs/Barbara.bmp"
-    image2 = "inputs/Goldhill.bmp"
-    image3 = "inputs/Peppers.bmp"
+    image1 ="/Users/zehuajiang/My/CS6643 Computer Vision Spring 2023/Project_1_Canny_Edge_Detector/Barbara.bmp"
+    image2 = "/Users/zehuajiang/Desktop/Project_1_Canny_Edge_Detector/Goldhill.bmp"
+    image3 = "/Users/zehuajiang/Desktop/Project_1_Canny_Edge_Detector/Peppers.bmp"
 
     img = cv2.imread(image1) # image size (512, 512, 3)
-    # img = cv2.imread(image2) # image size (512, 512, 3)
-    # img = cv2.imread(image3) # image size (512, 512, 3)
     main(img)
