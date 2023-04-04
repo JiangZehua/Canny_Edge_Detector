@@ -138,7 +138,17 @@ def simple_threshold(img, threshold):
     '''
     Simple Threshold using 25%, 50%, 75% of the maximum value of the response
     '''
-    threshold = threshold * np.max(img)
+    # threshold = threshold * np.max(img)
+
+    # get the list of image values, and sort them in acsending order
+    img_list = np.sort(img.flatten())
+    # and fliter out the zeros in the list
+    img_list = np.array([i for i in img_list if i != 0])
+    # get the index of the threshold value
+    index = int(threshold * img_list.shape[0])
+    # get the threshold value
+    threshold = img_list[index]
+    # create a zero matrix to store the result
     result = np.zeros(img.shape)
     result[img >= threshold] = 1
     return result
@@ -153,22 +163,28 @@ def main(img):
     # Gaussian smoothing
     img = convolution(img, Gaussian_mask)
     # save the result
-    cv2.imwrite("results/Gaussian_smoothing.bmp", img)
+    # pad the image with zeros so that the size of the result is the same as the original image
+    img_ = np.pad(img, ((3, 3), (3, 3)), 'constant', constant_values=0)
+    cv2.imwrite("results/Gaussian_smoothing.bmp", img_)
 
     # Normalized magnitude of the gradient
     respond, direction = Gradient_Operation(img, G_0, G_1, G_2, G_3)
-    cv2.imwrite("results/Normalized_magnitude_of_the_gradient.bmp", respond)
+    # pad the image with zeros so that the size of the result is the same as the original image
+    respond_ = np.pad(respond, ((4,4), (4,4)), 'constant', constant_values=0)
+    cv2.imwrite("results/Normalized_magnitude_of_the_gradient.bmp", respond_)
     # save the histogram of the result
     plt.hist(respond.flatten(), bins=100)
     plt.savefig("results/histogram_of_the_magnitude.png")
 
     # Non-Maximum Suppression
     suppressed = Non_Max_Suppression(respond, direction)
-    cv2.imwrite("results/Non-Maximum_Suppression.bmp", suppressed)
+    suppressed_ = np.pad(suppressed, ((5,5), (5,5)), 'constant', constant_values=0)
+    cv2.imwrite("results/Non-Maximum_Suppression.bmp", suppressed_)
 
     for i in [0.25, 0.5, 0.75]:
         result = simple_threshold(suppressed, i)
-        cv2.imwrite(f"results/binary_edge_map_{i}_threshold.bmp", result*255)
+        result_ = np.pad(result, ((5,5), (5,5)), 'constant', constant_values=0)
+        cv2.imwrite(f"results/binary_edge_map_{i}_threshold.bmp", result_*255)
 
 
 if __name__ == "__main__":
@@ -176,7 +192,7 @@ if __name__ == "__main__":
     image2 = "inputs/Goldhill.bmp"
     image3 = "inputs/Peppers.bmp"
 
-    img = cv2.imread(image1) # image size (512, 512, 3)
+    # img = cv2.imread(image1) # image size (512, 512, 3)
     # img = cv2.imread(image2) # image size (512, 512, 3)
-    # img = cv2.imread(image3) # image size (512, 512, 3)
+    img = cv2.imread(image3) # image size (512, 512, 3)
     main(img)

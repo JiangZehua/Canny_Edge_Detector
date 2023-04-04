@@ -1,8 +1,4 @@
 # CS6643 Project 1: Canny Edge Detection
-Zehua Jiang <zj2086@nyu.edu> 
-
-Sanyu Feng <sf3373@nyu.edu>
-
 ## Install
 ```bash
 python -m pip install -r requirements.txt
@@ -58,3 +54,5 @@ For the image `Peppers.bmp`, the edge maps with thresholds 0.25, 0.5, 0.75 are s
 
 
 All corresponding results can be found in the folder `results`.
+\
+All codes are available in the repository https://github.com/JiangZehua/Canny_Edge_Detector
